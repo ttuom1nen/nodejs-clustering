@@ -1,3 +1,5 @@
+// Set threadpool to 1 just for testing
+process.env.UV_THREADPOOL_SIZE = 1;
 const cluster = require("cluster");
 
 // Is the file being executed in master mode?
@@ -7,16 +9,14 @@ if (cluster.isMaster) {
 } else {
   // This is the child mode. It will act as server and nothing else
   const express = require("express");
+  const crypto = require("crypto");
   const app = express();
 
-  function doWork(duration) {
-    const start = Date.now();
-    while (Date.now() - start < duration) {}
-  }
-
+  // This is to simulate work
   app.get("/", (req, res) => {
-    doWork(5000);
-    res.send("Hi there");
+    crypto.pbkdf2("a", "b", 100000, 512, "sha512", () => {
+      res.send("Hi there");
+    });
   });
 
   // Thanks to the cluster, this route is not blocked while the above one is loading.
