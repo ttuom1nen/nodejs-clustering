@@ -19,5 +19,11 @@ if (cluster.isMaster) {
     res.send("Hi there");
   });
 
+  // Thanks to the cluster, this route is not blocked while the above one is loading.
+  // Add more clusters to make faster.
+  app.get("/fast", (req, res) => {
+    res.send("This was fast!");
+  });
+
   app.listen(3000);
 }
