@@ -17,4 +17,13 @@ app.listen(3000);
 
 // npm install -g pm2
 // PowerShell: Set-ExecutionPolicy -ExecutionPolicy Unrestricted
+
+// Start pm2 with 0 logical cores (0 = auto-detect)
 // pm2 start index.js -i 0
+
+// pm2 list
+// pm2 show index
+// Monitor dashboard:
+// pm2 monit
+// Shutdown:
+// pm2 delete index
