@@ -1,29 +1,31 @@
-const express = require("express");
-const crypto = require("crypto");
-const app = express();
+// Set threadpool to 2 just for testing
+process.env.UV_THREADPOOL_SIZE = 2;
+const cluster = require("cluster");
 
-// This is to simulate work
-app.get("/", (req, res) => {
-  crypto.pbkdf2("a", "b", 100000, 512, "sha512", () => {
-    res.send("Hi there");
+// Is the file being executed in master mode?
+if (cluster.isMaster) {
+  // index.js will be executed again but in child mode
+  cluster.fork();
+  cluster.fork();
+} else {
+  // This is the child mode. It will act as server and nothing else
+  const express = require("express");
+  const crypto = require("crypto");
+  const app = express();
+
+  // This is to simulate work
+  app.get("/", (req, res) => {
+    crypto.pbkdf2("a", "b", 100000, 512, "sha512", () => {
+      res.send("Hi there");
+    });
   });
-});
 
-app.get("/fast", (req, res) => {
-  res.send("This was fast!");
-});
+  // Thanks to the cluster, this route is not blocked while the above one is loading.
+  // Add more clusters to make faster. Adding too many clusters may have negative effect.
+  // The negative effects are due to cpu limitations. Bottleneck of mediocrity.
+  app.get("/fast", (req, res) => {
+    res.send("This was fast!");
+  });
 
-app.listen(3000);
-
-// npm install -g pm2
-// PowerShell: Set-ExecutionPolicy -ExecutionPolicy Unrestricted
-
-// Start pm2 with 0 logical cores (0 = auto-detect)
-// pm2 start index.js -i 0
-
-// pm2 list
-// pm2 show index
-// Monitor dashboard:
-// pm2 monit
-// Shutdown:
-// pm2 delete index
+  app.listen(3000);
+}
